@@ -26,13 +26,17 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
+const int ForecastDays = 5;
+const int MinTemperatureC = -20;
+const int MaxTemperatureC = 55;
+
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, ForecastDays).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
+            Random.Shared.Next(MinTemperatureC, MaxTemperatureC),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();

@@ -7,11 +7,6 @@ public static class LoggingConfiguration
 {
     public static ILoggingBuilder ConfigureSharedLogging(this ILoggingBuilder builder)
     {
-        builder.AddConsole(options =>
-        {
-            options.FormatterName = "simple";
-        });
-
         builder.AddSimpleConsole(options =>
         {
             options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
