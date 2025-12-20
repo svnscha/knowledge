@@ -1,5 +1,4 @@
 using Microsoft.Agents.AI.DevUI;
-using Microsoft.Agents.AI.Hosting.OpenAI;
 using Shared.Extensions;
 using Shared.Logging;
 
@@ -21,27 +20,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-const int ForecastDays = 5;
-const int MinTemperatureC = -20;
-const int MaxTemperatureC = 55;
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, ForecastDays).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(MinTemperatureC, MaxTemperatureC),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
 
 // Needed for DevUI to function
 app.MapOpenAIResponses();
@@ -49,9 +27,3 @@ app.MapOpenAIConversations();
 app.MapDevUI();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    private const double CelsiusToFahrenheitRatio = 9.0 / 5.0;
-    public int TemperatureF => 32 + (int)(TemperatureC * CelsiusToFahrenheitRatio);
-}
