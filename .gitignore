@@ -55,3 +55,9 @@ nunit-*.xml
 
 # Visual Studio
 .vs
+
+# Environment files
+*.env
+
+# Keep Development.env tracked as template
+!.devcontainer/Development.env
