@@ -2,19 +2,13 @@
   "name": "Knowledge Development",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/app",
+  "workspaceFolder": "/workspaces/app",
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {
       "extensions": [
         "EditorConfig.EditorConfig",
-        "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
-        "ms-dotnettools.vscode-dotnet-runtime",
-        "formulahendry.dotnet-test-explorer",
-        "fernandoescolar.vscode-solution-explorer",
-        "patcx.vscode-nuget-gallery",
-        "streetsidesoftware.code-spell-checker"
+        "ms-dotnettools.csdevkit"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -46,7 +40,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "dotnet restore",
+  "postCreateCommand": "dotnet tool install -g dotnet-ef && dotnet restore",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   }
