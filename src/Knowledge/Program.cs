@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddSharedServices(builder.Configuration);
 
+// Add OpenAI services required for DevUI
+builder.Services.AddOpenAIResponses();
+builder.Services.AddOpenAIConversations();
+
 // Configure logging with shared configuration
 builder.Logging.ConfigureSharedLogging();
 
