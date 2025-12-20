@@ -12,18 +12,15 @@ services:
     user: vscode
     depends_on:
       - postgres
+    env_file:
+      - Development.env
     environment:
-      # ASP.NET Core runtime
-      ASPNETCORE_ENVIRONMENT: Development
-      # Database connection (passed explicitly)
+      # Database connection (passed explicitly for docker networking)
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-knowledge}
-      # Application-specific settings
-      APP_HTTPS_REDIRECT_ENABLED: ${APP_HTTPS_REDIRECT_ENABLED:-false}
-      APP_LISTEN_URL: ${APP_LISTEN_URL:-http://+:5000}
     networks:
       - knowledge-network
 

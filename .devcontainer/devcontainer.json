@@ -8,7 +8,10 @@
     "vscode": {
       "extensions": [
         "EditorConfig.EditorConfig",
-        "ms-dotnettools.csdevkit"
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.dotnet-interactive-vscode",
+        "GitHub.copilot"
       ],
       "settings": {
         "editor.formatOnSave": true,

@@ -53,13 +53,6 @@ public static class WebApplicationBuilderExtensions
         // Get KnowledgeSettings for configuration
         var knowledgeSettings = KnowledgeSettingsExtensions.FromEnvironment();
 
-        // Configure listen URL from settings
-        if (!string.IsNullOrEmpty(knowledgeSettings.ListenUrl))
-        {
-            builder.WebHost.UseUrls(knowledgeSettings.ListenUrl);
-            bootstrapLogger.LogInformation("Configured to listen on: {ListenUrl}", knowledgeSettings.ListenUrl);
-        }
-
         // Log which .env file was loaded
         var loadedFile = builder.Configuration["DotEnv:LoadedFile"];
         if (!string.IsNullOrEmpty(loadedFile))
@@ -133,7 +126,7 @@ public static class WebApplicationBuilderExtensions
     {
         var knowledgeSettings = app.Services.GetRequiredService<KnowledgeSettings>();
         var logger = app.Services.GetRequiredService<ILogger<KnowledgeSettings>>();
-        var baseUrl = knowledgeSettings.ListenUrl.TrimEnd('/');
+        var baseUrl = knowledgeSettings.BaseUrl.TrimEnd('/');
 
         app.Lifetime.ApplicationStarted.Register(() =>
         {

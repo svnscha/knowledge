@@ -13,14 +13,9 @@ public class KnowledgeSettings
     public string Name { get; set; } = "Knowledge";
 
     /// <summary>
-    /// The base URL for the application.
+    /// The base URL for the application (used for display/links).
     /// </summary>
-    public string BaseUrl { get; set; } = "http://localhost:8000";
-
-    /// <summary>
-    /// The URL the application listens on.
-    /// </summary>
-    public string ListenUrl { get; set; } = "http://localhost:8000";
+    public string BaseUrl { get; set; } = "http://localhost:5000";
 
     /// <summary>
     /// Whether to enable HTTPS redirection.
@@ -51,8 +46,7 @@ public static class KnowledgeSettingsExtensions
         return new KnowledgeSettings
         {
             Name = Environment.GetEnvironmentVariable("APP_NAME") ?? "Knowledge",
-            BaseUrl = Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:8000",
-            ListenUrl = Environment.GetEnvironmentVariable("APP_LISTEN_URL") ?? "http://localhost:8000",
+            BaseUrl = Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:5000",
             HttpsRedirectEnabled = bool.TryParse(Environment.GetEnvironmentVariable("APP_HTTPS_REDIRECT_ENABLED"), out var httpsEnabled) && httpsEnabled,
             EnableDetailedErrors = bool.TryParse(Environment.GetEnvironmentVariable("APP_ENABLE_DETAILED_ERRORS"), out var enableErrors) && enableErrors,
             LogLevel = Environment.GetEnvironmentVariable("APP_LOG_LEVEL") ?? "Information"
