@@ -11,8 +11,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddSharedServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register KnowledgeSettings from environment variables
-        var knowledgeSettings = KnowledgeSettingsExtensions.FromEnvironment();
+        // Register KnowledgeSettings from configuration (appsettings.json, user secrets, etc.)
+        var knowledgeSettings = new KnowledgeSettings();
+        configuration.GetSection(KnowledgeSettings.SectionName).Bind(knowledgeSettings);
         services.AddSingleton(knowledgeSettings);
 
         return services;

@@ -21,13 +21,15 @@ public static class WebApplicationBuilderExtensions
     /// Call this once and you're ready to build your agents.
     /// </summary>
     /// <param name="builder">The WebApplicationBuilder to configure.</param>
+    /// <param name="configureServices">Callback to configure custom services.</param>
     /// <param name="apiTitle">Title for the Swagger documentation.</param>
     /// <param name="apiDescription">Description for the Swagger documentation.</param>
     /// <returns>A configured WebApplicationBuilder ready for additional customizations.</returns>
     public static WebApplicationBuilder ConfigureKnowledgeDefaults(
         this WebApplicationBuilder builder,
-        string apiTitle = "Knowledge API",
-        string apiDescription = "Knowledge management API with AI capabilities")
+        Action<KnowledgeSettings> configureServices,
+        string apiTitle = "Knowledge",
+        string apiDescription = "Knowledge with AI capabilities")
     {
         // Create bootstrap logger for startup messages
         using var bootstrapLoggerFactory = LoggerFactory.Create(logging =>
@@ -42,27 +44,12 @@ public static class WebApplicationBuilderExtensions
 
         bootstrapLogger.LogInformation("Initializing...");
 
-        // Add .env file to configuration pipeline
-        builder.Configuration.AddDotEnvFile(
-            environment: builder.Environment.EnvironmentName,
-            basePath: builder.Environment.ContentRootPath);
-
         // Add shared services (registers KnowledgeSettings)
         builder.Services.AddSharedServices(builder.Configuration);
 
-        // Get KnowledgeSettings for configuration
-        var knowledgeSettings = KnowledgeSettingsExtensions.FromEnvironment();
-
-        // Log which .env file was loaded
-        var loadedFile = builder.Configuration["DotEnv:LoadedFile"];
-        if (!string.IsNullOrEmpty(loadedFile))
-        {
-            bootstrapLogger.LogInformation("Loaded environment from: {FilePath}", loadedFile);
-        }
-        else
-        {
-            bootstrapLogger.LogWarning("No .env file found, using default configuration");
-        }
+        // Get KnowledgeSettings for configuration callback
+        var knowledgeSettings = new KnowledgeSettings();
+        builder.Configuration.GetSection(KnowledgeSettings.SectionName).Bind(knowledgeSettings);
 
         bootstrapLogger.LogInformation("Application: {AppName}, LogLevel: {LogLevel}", knowledgeSettings.Name, knowledgeSettings.LogLevel);
 
@@ -82,6 +69,8 @@ public static class WebApplicationBuilderExtensions
 
         // Configure logging with shared configuration
         builder.Logging.ConfigureSharedLogging();
+
+        configureServices(knowledgeSettings);
 
         return builder;
     }

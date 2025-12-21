@@ -31,25 +31,15 @@ public class KnowledgeSettings
     /// The log level for the application.
     /// </summary>
     public string LogLevel { get; set; } = "Information";
-}
 
-/// <summary>
-/// Extension methods to build KnowledgeSettings from environment variables.
-/// </summary>
-public static class KnowledgeSettingsExtensions
-{
+
     /// <summary>
-    /// Creates KnowledgeSettings from environment variables (APP_* format).
+    /// The API key.
     /// </summary>
-    public static KnowledgeSettings FromEnvironment()
-    {
-        return new KnowledgeSettings
-        {
-            Name = Environment.GetEnvironmentVariable("APP_NAME") ?? "Knowledge",
-            BaseUrl = Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "http://localhost:5000",
-            HttpsRedirectEnabled = bool.TryParse(Environment.GetEnvironmentVariable("APP_HTTPS_REDIRECT_ENABLED"), out var httpsEnabled) && httpsEnabled,
-            EnableDetailedErrors = bool.TryParse(Environment.GetEnvironmentVariable("APP_ENABLE_DETAILED_ERRORS"), out var enableErrors) && enableErrors,
-            LogLevel = Environment.GetEnvironmentVariable("APP_LOG_LEVEL") ?? "Information"
-        };
-    }
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The API endpoint.
+    /// </summary>
+    public string ApiEndpoint { get; set; } = string.Empty;
 }
