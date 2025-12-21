@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+      aspnetcore:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+      agents:
+        patterns:
+          - "Microsoft.Agents.*"
+      all-other:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "Microsoft.Extensions.*"
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.Agents.*"
+    commit-message:
+      prefix: "deps"
+      include: "scope"

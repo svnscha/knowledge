@@ -1,0 +1,67 @@
+# Docker Compose file for Development Container
+# This file sets up the development environment with the application service,
+# PostgreSQL database with pgvector extension, and pgAdmin for database management.
+services:
+  # Development App image and service
+  app:
+    image: mcr.microsoft.com/devcontainers/dotnet:10.0
+    volumes:
+      - ..:/workspaces/app:cached
+    command: sleep infinity
+    user: vscode
+    depends_on:
+      - postgres
+    environment:
+      # ASP.NET Core Environment
+      ASPNETCORE_ENVIRONMENT: Development
+      # Database connection (passed explicitly for docker networking)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: knowledge
+    networks:
+      - knowledge-network
+
+  # PostgreSQL with pgvector extension
+  # The image is based on PostgreSQL 16 with pgvector pre-installed.
+  # This is useful for development and testing of vector-based applications and generally for handling chat conversations.
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: knowledge
+    ports:
+      - "5432:5432"
+    networks:
+      - knowledge-network
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - knowledge-network
+
+networks:
+  knowledge-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  pgadmin-data:

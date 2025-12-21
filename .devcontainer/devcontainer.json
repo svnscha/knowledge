@@ -1,0 +1,50 @@
+{
+  "name": "Knowledge Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/app",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "EditorConfig.EditorConfig",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.dotnet-interactive-vscode",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "dotnet.defaultSolution": "Knowledge.sln",
+        "omnisharp.enableRoslynAnalyzers": true,
+        "omnisharp.enableEditorConfigSupport": true
+      }
+    }
+  },
+  "forwardPorts": [
+    5000,
+    5050,
+    5432
+  ],
+  "portsAttributes": {
+    "5000": {
+      "label": "Knowledge API (HTTP)",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "5050": {
+      "label": "pgAdmin",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "dotnet tool install -g dotnet-ef && dotnet restore",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}
