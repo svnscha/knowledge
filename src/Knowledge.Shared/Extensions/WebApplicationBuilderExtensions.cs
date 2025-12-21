@@ -5,9 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using Knowledge.Shared.Configuration;
 using Knowledge.Shared.Logging;
+using Knowledge.Shared.Workarounds;
+using Microsoft.OpenApi;
 
 namespace Knowledge.Shared.Extensions;
 
@@ -40,6 +41,9 @@ public static class WebApplicationBuilderExtensions
 
         // Register IOptions<KnowledgeSettings>
         builder.Services.AddSharedServices(builder.Configuration);
+
+        // Add database context with PostgreSQL and pgvector
+        builder.Services.AddKnowledgeDbContext(builder.Configuration);
 
         // Bind settings for callback (before DI container exists)
         var knowledgeSettings = new KnowledgeSettings();
@@ -108,6 +112,7 @@ public static class WebApplicationBuilderExtensions
             logger.LogInformation("═══════════════════════════════════════════════════════════");
             logger.LogInformation("  {AppName} is ready!", knowledgeSettings.Name);
             logger.LogInformation("═══════════════════════════════════════════════════════════");
+            logger.LogInformation("  Conversation: {ConversationId}", ConversationWorkaround.CurrentConversationId);
             logger.LogInformation("  Available endpoints:");
             logger.LogInformation("    • Home:    {BaseUrl}/", baseUrl);
             logger.LogInformation("    • DevUI:   {BaseUrl}/devui", baseUrl);
