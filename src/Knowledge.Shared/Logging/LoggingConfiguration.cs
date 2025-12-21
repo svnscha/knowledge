@@ -5,6 +5,32 @@ using Microsoft.Extensions.Logging.Console;
 namespace Knowledge.Shared.Logging;
 
 /// <summary>
+/// Options for configuring logging behavior.
+/// </summary>
+public class LoggingOptions
+{
+    /// <summary>
+    /// Enable console logging (default: true for web apps).
+    /// </summary>
+    public bool EnableConsole { get; set; } = true;
+
+    /// <summary>
+    /// Enable file logging (default: false).
+    /// </summary>
+    public bool EnableFile { get; set; } = false;
+
+    /// <summary>
+    /// Path to the log file when file logging is enabled.
+    /// </summary>
+    public string LogFilePath { get; set; } = "logs/knowledge.log";
+
+    /// <summary>
+    /// Minimum log level for file output.
+    /// </summary>
+    public LogLevel FileLogLevel { get; set; } = LogLevel.Debug;
+}
+
+/// <summary>
 /// Extension methods for configuring application logging.
 /// </summary>
 public static class LoggingConfiguration
@@ -12,14 +38,32 @@ public static class LoggingConfiguration
     /// <summary>
     /// Configures logging with a clean, simplified console output format.
     /// </summary>
-    public static ILoggingBuilder ConfigureSharedLogging(this ILoggingBuilder builder)
+    public static ILoggingBuilder ConfigureSharedLogging(this ILoggingBuilder builder, LoggingOptions? options = null)
     {
+        options ??= new LoggingOptions();
+
         builder.ClearProviders();
-        builder.AddConsole(options =>
+
+        if (options.EnableConsole)
         {
-            options.FormatterName = CleanConsoleFormatter.FormatterName;
-        });
-        builder.AddConsoleFormatter<CleanConsoleFormatter, CleanConsoleFormatterOptions>();
+            builder.AddConsole(opt =>
+            {
+                opt.FormatterName = CleanConsoleFormatter.FormatterName;
+            });
+            builder.AddConsoleFormatter<CleanConsoleFormatter, CleanConsoleFormatterOptions>();
+        }
+
+        if (options.EnableFile)
+        {
+            // Ensure directory exists
+            var logDir = Path.GetDirectoryName(options.LogFilePath);
+            if (!string.IsNullOrEmpty(logDir))
+            {
+                Directory.CreateDirectory(logDir);
+            }
+
+            builder.AddProvider(new FileLoggerProvider(options.LogFilePath, options.FileLogLevel));
+        }
 
         return builder;
     }
@@ -99,5 +143,101 @@ public class CleanConsoleFormatter : ConsoleFormatter
         }
 
         return category;
+    }
+}
+
+/// <summary>
+/// Simple file logger provider for writing logs to a file.
+/// </summary>
+public sealed class FileLoggerProvider : ILoggerProvider
+{
+    private readonly string _filePath;
+    private readonly object _lock = new();
+    private StreamWriter? _writer;
+
+    internal LogLevel MinLevel { get; }
+
+    public FileLoggerProvider(string filePath, LogLevel minLevel)
+    {
+        _filePath = filePath;
+        MinLevel = minLevel;
+    }
+
+    public ILogger CreateLogger(string categoryName)
+    {
+        return new FileLogger(categoryName, this);
+    }
+
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            _writer?.Dispose();
+            _writer = null;
+        }
+    }
+
+    internal void WriteLog(string categoryName, LogLevel logLevel, string message, Exception? exception)
+    {
+        if (logLevel < MinLevel)
+            return;
+
+        lock (_lock)
+        {
+            try
+            {
+                _writer ??= new StreamWriter(_filePath, append: true) { AutoFlush = true };
+
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                var level = logLevel switch
+                {
+                    LogLevel.Trace => "TRC",
+                    LogLevel.Debug => "DBG",
+                    LogLevel.Information => "INF",
+                    LogLevel.Warning => "WRN",
+                    LogLevel.Error => "ERR",
+                    LogLevel.Critical => "CRT",
+                    _ => "???"
+                };
+
+                _writer.WriteLine($"[{timestamp}] [{level}] [{categoryName}] {message}");
+
+                if (exception is not null)
+                {
+                    _writer.WriteLine(exception.ToString());
+                }
+            }
+            catch
+            {
+                _writer?.Dispose();
+                _writer = null;
+                throw;
+            }
+        }
+    }
+}
+
+/// <summary>
+/// Simple file logger implementation.
+/// </summary>
+public sealed class FileLogger : ILogger
+{
+    private readonly string _categoryName;
+    private readonly FileLoggerProvider _provider;
+
+    public FileLogger(string categoryName, FileLoggerProvider provider)
+    {
+        _categoryName = categoryName;
+        _provider = provider;
+    }
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= _provider.MinLevel;
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        var message = formatter(state, exception);
+        _provider.WriteLog(_categoryName, logLevel, message, exception);
     }
 }

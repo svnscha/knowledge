@@ -1,11 +1,13 @@
-// Knowledge API - Demo Application for AI Agent Development
-
 using System.ClientModel;
+using Knowledge.Services;
+using Knowledge.Shared.Agents;
 using Knowledge.Shared.Extensions;
 using Microsoft.Agents.AI.DevUI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Extensions.AI;
 using OpenAI;
+
+// Agents are registered as scoped services and wired via AddAIAgent
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,11 +26,20 @@ builder.ConfigureKnowledgeDefaults((settings, logger) =>
     }
 
     var client = new OpenAIClient(new ApiKeyCredential(settings.ApiKey), options);
+    var chatClient = client.GetChatClient("gpt-4.1").AsIChatClient();
 
-    builder.Services.AddChatClient(client.GetChatClient("gpt-4.1").AsIChatClient());
+    // Configure embedding service
+    var embeddingClient = client.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+    builder.Services.AddEmbeddingService(embeddingClient);
 
-    builder.AddAIAgent("Knowledge", "You are a helpful agent named Knowledge.");
+    // Register agents
+    builder.Services.AddSingleton<KnowledgeSearchAgent>();
+    builder.AddAIAgent("Knowledge", (services, key) => AgentFactory.CreateKnowledgeAgent(chatClient, services, key));
+    builder.AddAIAgent("KnowledgeSearch", (services, key) => AgentFactory.CreateKnowledgeSearchAgent(chatClient, services, key));
 });
+
+// Register background service for embedding processing
+builder.Services.AddHostedService<EmbeddingBackgroundService>();
 
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
@@ -46,3 +57,4 @@ app.MapGet("/", () => Results.Redirect("/devui/"));
 app.LogStartupComplete();
 
 app.Run();
+

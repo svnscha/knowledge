@@ -2,22 +2,35 @@
 
 > *"Because calling it 'AI-Stuff-I-Throw-Together-At-2AM' didn't fit the domain name."*
 
-A hands-on companion repository for the AI Agents in .NET blog series at [svnscha.de](https://svnscha.de). Each branch builds on the previous, taking you from "Hello World" to agentic systems.
+A hands-on companion repository for the AI Agents in .NET blog series at [svnscha.de](https://svnscha.de). Each branch builds on the previous, taking you from "Hello World" to agentic systems. The current merged variant is on `main`.
 
 ## Series Branches
 
 | Branch | Topic | What You'll Learn | CodeSpace
 |--------|-------|-------------------|---|
-| `main` | [Repository & Hello World Agent](https://svnscha.de/posts/ai-agents-dotnet-intro/) | Project setup, DevUI, your first conversational agent | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/main) |
+| `main` | Latest | Merged version of all branches. | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/main) |
+| `part/00-repository-setup` | [Repository & Hello World Agent](https://svnscha.de/posts/ai-agents-dotnet-intro/) | Project setup, DevUI, your first conversational agent | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/part/00-repository-setup) |
+| `part/01-agentic-rag` | [AI Agents in .NET: Building Agentic RAG](https://svnscha.de/posts/ai-agents-dotnet-part-1/) | PostgreSQL storage, Tool calling, Message Persistence, Embeddings | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/part/01-agentic-rag) |
 
 
 > *New branches added as the series progresses. Star the repo to stay updated!*
 
+## Project Structure
+
+```
+src/
+├── Knowledge/              # Web API with DevUI (simple agent, no persistence)
+└── Knowledge.Shared/       # Shared services, entities, and storage
+```
+
 ## Getting Started
 
+### Web API (DevUI)
+
 1. **Clone** & checkout the branch for your current article
-2. **Open in VS Code** with Dev Containers (or just open in [GitHub Codespaces](https://github.com/codespaces) for a one-click setup)
+2. **Open in VS Code** with Dev Containers (or [GitHub Codespaces](https://github.com/codespaces))
 3. **Configure your API key** (see [Configuration](#configuration) below)
+5. **Database migration** `dotnet ef database update --project src/Knowledge.Shared`
 4. **Run** `dotnet run --project src/Knowledge`
 5. **Navigate** to `http://localhost:5000/devui`
 
