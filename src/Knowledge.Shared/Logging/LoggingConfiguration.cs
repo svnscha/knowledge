@@ -4,15 +4,20 @@ using Microsoft.Extensions.Logging.Console;
 
 namespace Knowledge.Shared.Logging;
 
+/// <summary>
+/// Extension methods for configuring application logging.
+/// </summary>
 public static class LoggingConfiguration
 {
+    /// <summary>
+    /// Configures logging with a clean, simplified console output format.
+    /// </summary>
     public static ILoggingBuilder ConfigureSharedLogging(this ILoggingBuilder builder)
     {
-        // Clear default providers and use our clean formatter
         builder.ClearProviders();
         builder.AddConsole(options =>
         {
-            options.FormatterName = "clean";
+            options.FormatterName = CleanConsoleFormatter.FormatterName;
         });
         builder.AddConsoleFormatter<CleanConsoleFormatter, CleanConsoleFormatterOptions>();
 
@@ -28,14 +33,17 @@ public class CleanConsoleFormatterOptions : ConsoleFormatterOptions
 }
 
 /// <summary>
-/// A clean console formatter that removes event IDs and simplifies category names.
+/// A clean console formatter that produces human-readable log output.
 /// </summary>
 public class CleanConsoleFormatter : ConsoleFormatter
 {
-    public CleanConsoleFormatter() : base("clean")
+    public const string FormatterName = "clean";
+
+    public CleanConsoleFormatter() : base(FormatterName)
     {
     }
 
+    /// <inheritdoc />
     public override void Write<TState>(in LogEntry<TState> logEntry, IExternalScopeProvider? scopeProvider, TextWriter textWriter)
     {
         var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception);
@@ -50,7 +58,7 @@ public class CleanConsoleFormatter : ConsoleFormatter
 
         textWriter.WriteLine($"{timestamp} {logLevel}: {category} {message}");
 
-        if (logEntry.Exception != null)
+        if (logEntry.Exception is not null)
         {
             textWriter.WriteLine(logEntry.Exception.ToString());
         }
@@ -64,26 +72,27 @@ public class CleanConsoleFormatter : ConsoleFormatter
         LogLevel.Warning => "warn",
         LogLevel.Error => "fail",
         LogLevel.Critical => "crit",
+        LogLevel.None => "none",
         _ => "????"
     };
 
     private static string SimplifyCategory(string category)
     {
         // For Knowledge.* categories, use just the class name
-        if (category.StartsWith("Knowledge."))
+        if (category.StartsWith("Knowledge.", StringComparison.Ordinal))
         {
             var lastDot = category.LastIndexOf('.');
             return lastDot >= 0 ? category[(lastDot + 1)..] : category;
         }
 
         // For Microsoft.Hosting.Lifetime, simplify to Hosting
-        if (category == "Microsoft.Hosting.Lifetime")
+        if (category.Equals("Microsoft.Hosting.Lifetime", StringComparison.Ordinal))
         {
             return "Hosting";
         }
 
         // For other Microsoft categories, use last segment
-        if (category.StartsWith("Microsoft."))
+        if (category.StartsWith("Microsoft.", StringComparison.Ordinal))
         {
             var lastDot = category.LastIndexOf('.');
             return lastDot >= 0 ? category[(lastDot + 1)..] : category;

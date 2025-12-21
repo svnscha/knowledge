@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Knowledge.Shared.Configuration;
 using Knowledge.Shared.Logging;
@@ -11,27 +12,20 @@ using Knowledge.Shared.Logging;
 namespace Knowledge.Shared.Extensions;
 
 /// <summary>
-/// Extension methods for bootstrapping ASP.NET Core applications with shared configuration.
-/// Makes your Program.cs as clean as a freshly formatted SSD.
+/// Extension methods for bootstrapping ASP.NET Core applications.
 /// </summary>
 public static class WebApplicationBuilderExtensions
 {
     /// <summary>
-    /// Configures the WebApplicationBuilder with all shared services and configuration.
-    /// Call this once and you're ready to build your agents.
+    /// Configures the WebApplicationBuilder with shared services and configuration.
     /// </summary>
-    /// <param name="builder">The WebApplicationBuilder to configure.</param>
-    /// <param name="configureServices">Callback to configure custom services.</param>
-    /// <param name="apiTitle">Title for the Swagger documentation.</param>
-    /// <param name="apiDescription">Description for the Swagger documentation.</param>
-    /// <returns>A configured WebApplicationBuilder ready for additional customizations.</returns>
     public static WebApplicationBuilder ConfigureKnowledgeDefaults(
         this WebApplicationBuilder builder,
-        Action<KnowledgeSettings> configureServices,
+        Action<KnowledgeSettings, ILogger> configureServices,
         string apiTitle = "Knowledge",
         string apiDescription = "Knowledge with AI capabilities")
     {
-        // Create bootstrap logger for startup messages
+        // Bootstrap logger for startup messages before DI is ready
         using var bootstrapLoggerFactory = LoggerFactory.Create(logging =>
         {
             logging.AddSimpleConsole(options =>
@@ -44,10 +38,10 @@ public static class WebApplicationBuilderExtensions
 
         bootstrapLogger.LogInformation("Initializing...");
 
-        // Add shared services (registers KnowledgeSettings)
+        // Register IOptions<KnowledgeSettings>
         builder.Services.AddSharedServices(builder.Configuration);
 
-        // Get KnowledgeSettings for configuration callback
+        // Bind settings for callback (before DI container exists)
         var knowledgeSettings = new KnowledgeSettings();
         builder.Configuration.GetSection(KnowledgeSettings.SectionName).Bind(knowledgeSettings);
 
@@ -70,7 +64,7 @@ public static class WebApplicationBuilderExtensions
         // Configure logging with shared configuration
         builder.Logging.ConfigureSharedLogging();
 
-        configureServices(knowledgeSettings);
+        configureServices(knowledgeSettings, bootstrapLogger);
 
         return builder;
     }
@@ -78,14 +72,10 @@ public static class WebApplicationBuilderExtensions
     /// <summary>
     /// Configures the HTTP request pipeline with shared middleware.
     /// </summary>
-    /// <param name="app">The WebApplication to configure.</param>
-    /// <returns>The configured WebApplication.</returns>
     public static WebApplication ConfigureKnowledgePipeline(this WebApplication app)
     {
-        // Get KnowledgeSettings from DI
-        var knowledgeSettings = app.Services.GetRequiredService<KnowledgeSettings>();
+        var knowledgeSettings = app.Services.GetRequiredService<IOptions<KnowledgeSettings>>().Value;
 
-        // Enable Swagger in development
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -96,7 +86,6 @@ public static class WebApplicationBuilderExtensions
             });
         }
 
-        // Only redirect to HTTPS if enabled (from KnowledgeSettings)
         if (knowledgeSettings.HttpsRedirectEnabled)
         {
             app.UseHttpsRedirection();
@@ -106,16 +95,13 @@ public static class WebApplicationBuilderExtensions
     }
 
     /// <summary>
-    /// Logs a welcome message with available endpoints after the application has started.
-    /// Call this after app.Run() setup but before actually running.
+    /// Logs a welcome message with available endpoints after startup.
     /// </summary>
-    /// <param name="app">The WebApplication instance.</param>
-    /// <returns>The WebApplication for chaining.</returns>
     public static WebApplication LogStartupComplete(this WebApplication app)
     {
-        var knowledgeSettings = app.Services.GetRequiredService<KnowledgeSettings>();
+        var knowledgeSettings = app.Services.GetRequiredService<IOptions<KnowledgeSettings>>().Value;
         var logger = app.Services.GetRequiredService<ILogger<KnowledgeSettings>>();
-        var baseUrl = knowledgeSettings.BaseUrl.TrimEnd('/');
+        var baseUrl = knowledgeSettings.PublicUrl.TrimEnd('/');
 
         app.Lifetime.ApplicationStarted.Register(() =>
         {
