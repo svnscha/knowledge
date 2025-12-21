@@ -6,9 +6,9 @@ A hands-on companion repository for the AI Agents in .NET blog series at [svnsch
 
 ## Series Branches
 
-| Branch | Topic | What You'll Learn |
-|--------|-------|-------------------|
-| `main` | Repository & Hello World Agent | Project setup, DevUI, your first conversational agent |
+| Branch | Topic | What You'll Learn | CodeSpace
+|--------|-------|-------------------|---|
+| `main` | [Repository & Hello World Agent](https://svnscha.de/posts/ai-agents-dotnet-intro/) | Project setup, DevUI, your first conversational agent | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/main) |
 
 
 > *New branches added as the series progresses. Star the repo to stay updated!*
@@ -16,7 +16,7 @@ A hands-on companion repository for the AI Agents in .NET blog series at [svnsch
 ## Getting Started
 
 1. **Clone** & checkout the branch for your current article
-2. **Open in VS Code** with Dev Containers
+2. **Open in VS Code** with Dev Containers (or just open in [GitHub Codespaces](https://github.com/codespaces) for a one-click setup)
 3. **Configure your API key** (see [Configuration](#configuration) below)
 4. **Run** `dotnet run --project src/Knowledge`
 5. **Navigate** to `http://localhost:5000/devui`
