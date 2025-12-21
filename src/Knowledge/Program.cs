@@ -25,7 +25,6 @@ builder.ConfigureKnowledgeDefaults((settings, logger) =>
 
     var client = new OpenAIClient(new ApiKeyCredential(settings.ApiKey), options);
 
-    // TODO: Make model name configurable via KnowledgeSettings
     builder.Services.AddChatClient(client.GetChatClient("gpt-4.1").AsIChatClient());
 
     builder.AddAIAgent("Knowledge", "You are a helpful agent named Knowledge.");
