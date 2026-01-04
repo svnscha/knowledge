@@ -44,6 +44,9 @@ public static class LoggingConfiguration
 
         builder.ClearProviders();
 
+        // Suppress verbose EF Core logging by default
+        builder.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+
         if (options.EnableConsole)
         {
             builder.AddConsole(opt =>
@@ -98,9 +101,8 @@ public class CleanConsoleFormatter : ConsoleFormatter
 
         var timestamp = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss]");
         var logLevel = GetLogLevelString(logEntry.LogLevel);
-        var category = SimplifyCategory(logEntry.Category);
 
-        textWriter.WriteLine($"{timestamp} {logLevel}: {category} {message}");
+        textWriter.WriteLine($"{timestamp} {logLevel}: {logEntry.Category} {message}");
 
         if (logEntry.Exception is not null)
         {
@@ -119,31 +121,6 @@ public class CleanConsoleFormatter : ConsoleFormatter
         LogLevel.None => "none",
         _ => "????"
     };
-
-    private static string SimplifyCategory(string category)
-    {
-        // For Knowledge.* categories, use just the class name
-        if (category.StartsWith("Knowledge.", StringComparison.Ordinal))
-        {
-            var lastDot = category.LastIndexOf('.');
-            return lastDot >= 0 ? category[(lastDot + 1)..] : category;
-        }
-
-        // For Microsoft.Hosting.Lifetime, simplify to Hosting
-        if (category.Equals("Microsoft.Hosting.Lifetime", StringComparison.Ordinal))
-        {
-            return "Hosting";
-        }
-
-        // For other Microsoft categories, use last segment
-        if (category.StartsWith("Microsoft.", StringComparison.Ordinal))
-        {
-            var lastDot = category.LastIndexOf('.');
-            return lastDot >= 0 ? category[(lastDot + 1)..] : category;
-        }
-
-        return category;
-    }
 }
 
 /// <summary>

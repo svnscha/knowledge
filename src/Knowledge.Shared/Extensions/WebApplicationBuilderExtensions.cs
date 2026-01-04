@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -80,6 +81,39 @@ public static class WebApplicationBuilderExtensions
     {
         var knowledgeSettings = app.Services.GetRequiredService<IOptions<KnowledgeSettings>>().Value;
 
+        // Add exception handling middleware first to catch all errors
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var logger = context.RequestServices.GetRequiredService<ILogger<KnowledgeSettings>>();
+                    var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+
+                    if (exceptionFeature != null)
+                    {
+                        logger.LogError(exceptionFeature.Error,
+                            "Unhandled exception occurred while processing request {Method} {Path}",
+                            context.Request.Method,
+                            context.Request.Path);
+                    }
+
+                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = "An internal server error occurred.",
+                        requestId = context.TraceIdentifier
+                    });
+                });
+            });
+        }
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -115,7 +149,6 @@ public static class WebApplicationBuilderExtensions
             logger.LogInformation("  Conversation: {ConversationId}", ConversationWorkaround.CurrentConversationId);
             logger.LogInformation("  Available endpoints:");
             logger.LogInformation("    • Home:    {BaseUrl}/", baseUrl);
-            logger.LogInformation("    • DevUI:   {BaseUrl}/devui", baseUrl);
             if (app.Environment.IsDevelopment())
             {
                 logger.LogInformation("    • Swagger: {BaseUrl}/swagger", baseUrl);

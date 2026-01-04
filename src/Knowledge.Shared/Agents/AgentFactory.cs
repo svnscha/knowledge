@@ -55,11 +55,11 @@ RESPONSE GUIDELINES:
 
 Remember: You decide when search helps. Don't search reflexively for every question.";
 
-    public static ChatClientAgent CreateKnowledgeSearchAgent(IChatClient chatClient, IServiceProvider services, string key)
+    public static AIAgent CreateKnowledgeSearchAgent(IChatClient chatClient, IServiceProvider services, string key)
     {
         var searchAgent = services.GetRequiredService<KnowledgeSearchAgent>();
 
-        return chatClient.CreateAIAgent(new ChatClientAgentOptions
+        var agent = chatClient.CreateAIAgent(new ChatClientAgentOptions
         {
             Id = key,
             Name = key,
@@ -67,9 +67,21 @@ Remember: You decide when search helps. Don't search reflexively for every quest
             {
                 ConversationId = "global",
                 Instructions = KnowledgeSearchSystemPrompt,
-                Tools = [AIFunctionFactory.Create(searchAgent.SearchConversationHistoryAsync)],
+                Tools = [AIFunctionFactory.Create(searchAgent.SearchConversationHistoryAsync, "SearchConversationHistory")],
                 ToolMode = ChatToolMode.Auto
             }
         });
+
+        // Wrap with filter to prevent downstream consumers from seeing tool calls they can't execute
+        return new ToolCallFilterAgent(agent);
+    }
+
+    /// <summary>
+    /// Creates the Knowledge Title agent for conversation title generation.
+    /// Simple assistant with no tools - designed for LibreChat's title generation.
+    /// </summary>
+    public static ChatClientAgent CreateKnowledgeTitleAgent(IChatClient chatClient, IServiceProvider services, string key)
+    {
+        return KnowledgeTitleAgent.Create(chatClient, services, key);
     }
 }

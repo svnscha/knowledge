@@ -11,6 +11,8 @@ A hands-on companion repository for the AI Agents in .NET blog series at [svnsch
 | `main` | Latest | Merged version of all branches. | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/main) |
 | `part/00-repository-setup` | [Repository & Hello World Agent](https://svnscha.de/posts/ai-agents-dotnet-intro/) | Project setup, DevUI, your first conversational agent | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/part/00-repository-setup) |
 | `part/01-agentic-rag` | [AI Agents in .NET: Building Agentic RAG](https://svnscha.de/posts/ai-agents-dotnet-part-1/) | PostgreSQL storage, Tool calling, Message Persistence, Embeddings | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/part/01-agentic-rag) |
+| `part/02-connect-librechat` | [AI Agents in .NET: Beyond DevUI - LibreChat Integration](https://svnscha.de/posts/ai-agents-dotnet-part-2/) | LibreChat, Tool Call Middleware, Hosting as OpenAI Compatible API | [![Open in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/svnscha/knowledge/tree/part/02-connect-librechat) |
+
 
 
 > *New branches added as the series progresses. Star the repo to stay updated!*
